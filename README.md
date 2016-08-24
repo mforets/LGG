@@ -22,5 +22,5 @@ The tutorial was designed in the collaborative mathematics platform SageMathClou
 ## Who may be interested 
 
 * If you would like to understand how does one of the algorithms in SpaceEx works.
-* If you would like to see working examples of some Sage libraries (such as Polyhedra, LP), or using Numpy code (for performing numerical integrals or random number generators).
-* If you are interested in Hausdorff distance computations.
+* If you would like to start using Sage in your own work, and would like to see working examples of some Sage libraries (such as Polyhedra, LP), or to perform numerical computations with Numpy (such as performing numerical integrals or using random number generators).
+* If you are interested in set-based methods in numerical analysis, reachability, and Hausdorff distance computations.
