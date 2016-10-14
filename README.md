@@ -1,9 +1,13 @@
-# LGG Reachability algorithm
+# What is reachability?  
 Reachability analysis consists in determining future (or past) trajectories of systems of differential equations. The systems are assumed to be uncertain, which usually involves the following assumptions: (i) uncertainty in the initial states; (ii) uncertainty in the coefficients of the system; (iii) uncertainties in the inputs of the system (e.g. noise). These assumptions lead to consider reachability flow-pipes (which encompass an infinite number of trajectories obtained by the numeric solution of usual ODE-solvers). A convenient computational representation of reachability flow-pipes is given by [convex polytopes](https://en.wikipedia.org/wiki/Convex_polytope).  
 
-## What this tutorial is about 
+## What is LGG?
 
-This is a tutorial on the LGG algorithm. LGG, that stands for the author's names Colas Le Guernic and Antoine Girard (see [linear](http://www.sciencedirect.com/science/article/pii/S1751570X09000387) and [hybrid](http://link.springer.com/chapter/10.1007/978-3-642-02658-4_40) papers), is a set-based reachability algorithm, that can be applied to uncertain hybrid systems with piecewise-linear dynamics. It is one of the algorithms included in the [SpaceEx](http://spaceex.imag.fr/) state space explorer tool, it can be downloaded for free at http://spaceex.imag.fr/. 
+LGG stands for the name of the authors of the algorithm, Colas Le Guernic and Antoine Girard, see [linear](http://www.sciencedirect.com/science/article/pii/S1751570X09000387), [hybrid](http://link.springer.com/chapter/10.1007/978-3-642-02658-4_40), and references therein. It is a set-based reachability algorithm, that can be applied to uncertain hybrid systems with piecewise-linear dynamics. Moreover, it is one of the algorithms included in the [SpaceEx](http://spaceex.imag.fr/) state space explorer tool, it can be downloaded for free at http://spaceex.imag.fr/. 
+
+## What can I learn in the tutorial?
+
+In the folder ```/tutorial```, you will find a set of Jupyter notebooks with a tutorial. It contains further explanations of the implementation in SageMath, some worked examples, and exercises. Some but not all mathematical developments are included; I recommend that you refer to the original papers for further details. 
 
 ## What are the methods that we use 
 
