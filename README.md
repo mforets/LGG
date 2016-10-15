@@ -1,4 +1,5 @@
 # What is reachability?  
+<<<<<<< HEAD
 Reachability analysis consists, roughly speaking, in determining future (or past) trajectories of dynamical systems. We will work on the continuous-time setting, and with dynamical systems that are mathematically described by a set of ordinary differential equations. The reachability problem gets more interesting when we consider *uncertainties*, which usually involve one or more of these assumptions:
 
 (i) uncertainty in the initial states; 
@@ -11,6 +12,12 @@ These assumptions lead to consider reachability flow-pipes (which encompass an i
 
 ## What is LGG?
 
+=======
+Reachability analysis consists in determining future (or past) trajectories of systems of differential equations. The systems are assumed to be uncertain, which usually involves the following assumptions: (i) uncertainty in the initial states; (ii) uncertainty in the coefficients of the system; (iii) uncertainties in the inputs of the system (e.g. noise). These assumptions lead to consider reachability flow-pipes (which encompass an infinite number of trajectories obtained by the numeric solution of usual ODE-solvers). A convenient computational representation of reachability flow-pipes is given by [convex polytopes](https://en.wikipedia.org/wiki/Convex_polytope).  
+
+## What is LGG?
+
+>>>>>>> origin/master
 LGG stands for the name of the authors of the algorithm, Colas Le Guernic and Antoine Girard, see [linear](http://www.sciencedirect.com/science/article/pii/S1751570X09000387), [hybrid](http://link.springer.com/chapter/10.1007/978-3-642-02658-4_40), and references therein. It is a set-based reachability algorithm, that can be applied to uncertain hybrid systems with piecewise-linear dynamics. Moreover, it is one of the algorithms included in the [SpaceEx](http://spaceex.imag.fr/) state space explorer tool, it can be downloaded for free at http://spaceex.imag.fr/. 
 
 ## What can I learn in the tutorial?
