@@ -1,7 +1,4 @@
-# load lib
+import sys
+sys.path.insert(1, '..')
 
-# load system
-
-# main loop
-
-# output
+from lib.polyFunctions_core import PolyhedronFromHSpaceRep, PolyhedronToHSpaceRep
