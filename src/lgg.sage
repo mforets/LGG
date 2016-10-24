@@ -224,6 +224,8 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
 
 def plot_flowpipe(fp, **kwargs):
 
+    from sage.geometry.polyhedron.plot import Projection
+
     n = fp[0].ambient_dim()
 
     if n == 2:
@@ -235,12 +237,13 @@ def plot_flowpipe(fp, **kwargs):
 
     elif n>2:
 
-        v = kwargs['dir']
-        fp_proj = [projection(lambda x: [x[v[0]],x[v[1]]] ) for p in fp]
+        v = kwargs['projection_directions']
+
+        fp_proj = [Projection(p, proj = lambda x : [ x[v[0]], x[v[1]] ]) for p in fp]
 
         # plot the result
         myFig = Graphics()
-        myFig = sum(p.plot(alpha=0.5) for p in fp)
+        myFig = sum(p.plot() for p in fp_proj)
         myFig.show()
 
     return
