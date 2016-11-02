@@ -13,9 +13,8 @@ against 14s in Gurobi. I think this may be from unnecessary overhead.
 if X0 is RDF and base_ring is set to QQ is does work (only with GLPK). Also, it would be intersting to make it work with Gurobi.
 Currently, if X0 is RDF and base_ring is set to QQ, then Gurobi will give infeas or unbdd problem.
 
-* Homogeneous case is still not correct. To see this, go to
-simple2d.ipynb
-We expect to get the same results as with mu -> 0.
+* The plot for projections of higher dimensional systems is not very nice; it does not allow alpha keyword,
+and the polygons are not taken the Minkowski sum. Is it possible to use the library projections?
 
 """
 
@@ -140,36 +139,25 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
 
     if got_homogeneous: # dx/dx = Ax
 
-        # compute range of the input under B, V = BU
-        #V = polyhedron_linear_map(B, U, base_ring = base_ring)
-
         # compute matrix exponential exp(A*tau)
         Phi_tau = expm(np.multiply(A, tau))
 
         # compute exp(tau*A)X0
         expX0 = polyhedron_linear_map(Phi_tau, X0, base_ring = base_ring)
 
-        # compute the initial over-approximation
-        #tau_V = polyhedron_linear_map(tau*np.identity(n), V)
-
         # compute the bloating factor
         Ainfty = matrix_sup_norm(A)
         RX0 = polyhedron_sup_norm(X0)
-        #RV = polyhedron_sup_norm(V)
 
         unitBall = BoxInfty(center = zero_vector(n), radius = _sage_const_1 , base_ring = base_ring)
         alpha_tau = (exp(tau*Ainfty) - _sage_const_1  - tau*Ainfty)*(RX0)
         alpha_tau_B = polyhedron_linear_map(alpha_tau*np.identity(n), unitBall, base_ring = base_ring)
 
         # compute the first element of the approximating sequence, Omega_0
-        #aux = expX0.Minkowski_sum(tau_V)
-        Omega0 = X0.convex_hull(alpha_tau_B)
+        Omega0 = X0.convex_hull(expX0.Minkowski_sum(alpha_tau_B))
 
-        #beta_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RV/Ainfty)
-        #beta_tau_B = polyhedron_linear_map(beta_tau*np.identity(n), unitBall)
-        W_tau = Polyhedron(vertices = [], ambient_dim=n) # NOT TESTED
-        # if W_tau = [], then supp_fun_polyhedron is set to return 0
-        #W_tau = tau_V.Minkowski_sum(beta_tau_B)
+        W_tau = Polyhedron(vertices = [], ambient_dim=n)
+        # since W_tau = [], supp_fun_polyhedron returns 0
 
     else: # dx/dx = Ax + Bu
 
@@ -261,11 +249,11 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
     # we have N polyhedrons
     Omega_i_Poly = list()
 
-    # This loop can be parallelized
+    # This loop can be vectorized (?)
     for i in range(N):    # run over polyhedra
 
         # for each polyhedron, use all directions
-        A = matrix(RR,k,n); b = vector(RR,k)
+        A = matrix(base_ring, k, n); b = vector(base_ring, k)
 
         for j in range(k): #run over directions
             s_fun = Omega_i_Family_SF[j][i]
@@ -293,14 +281,8 @@ def _Omega_i_supports(d):
 
     for i in (ellipsis_range(_sage_const_0 ,Ellipsis,N-_sage_const_2 )):
         r.append(np.dot(Phi_tau.transpose(),r[i]))
-        #print r[i]
-        #print W_tau.base_ring()
-        #print W_tau.inequalities_list()
-        #print supp_fun_polyhedron(W_tau, r[i], solver=solver, verbose=verbose)
-        #print '===================='
         s.append(s[i] + supp_fun_polyhedron(W_tau, r[i], solver=solver, verbose=verbose))
         rhoi.append(s[i+_sage_const_1 ] + supp_fun_polyhedron(Omega0, r[i+_sage_const_1 ], solver=solver, verbose=verbose))
-
     return rhoi
 
 def plot_flowpipe(fp, **kwargs):
@@ -318,7 +300,11 @@ def plot_flowpipe(fp, **kwargs):
 
     elif n>_sage_const_2 :
 
-        v = kwargs['projection_directions']
+        if 'directions' in kwargs:
+            v = kwargs['directions']
+        else:
+            print 'WARNING: projection directions not specified. Assuming directions=[0,1]'
+            v = [_sage_const_0 ,_sage_const_1 ];
 
         fp_proj = [Projection(p, proj = lambda x : [ x[v[_sage_const_0 ]], x[v[_sage_const_1 ]] ]) for p in fp]
 
