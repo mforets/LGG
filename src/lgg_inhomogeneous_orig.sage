@@ -2,20 +2,7 @@ r"""
 
 TO-DO:
 
-* Check if it is relevant to Cythonize some parts. What can be done with a user-defined
-class (not native C). For instance, with the Polyhedron?
-
-* Use an internal supp_fun_polyhedron, because W_tau and Omega_0 do not change, so we may avoid some overhead
-due to function calls and preparation of the LP. In experiments, Gurobi is being slower. For instance, I got 8s in GLPK
-against 14s in Gurobi. I think this may be from unnecessary overhead.
-
-* Understand why in some configurations it does not work. For instance, if X0 is QQ and base_ring is set to QQ. However,
-if X0 is RDF and base_ring is set to QQ is does work (only with GLPK). Also, it would be intersting to make it work with Gurobi.
-Currently, if X0 is RDF and base_ring is set to QQ, then Gurobi will give infeas or unbdd problem.
-
-* Homogeneous case is still not correct. To see this, go to
-simple2d.ipynb
-We expect to get the same results as with mu -> 0.
+Add Gurobi solver support in _Omega_i_supports function.
 
 """
 import sys
@@ -61,11 +48,6 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         * 'GLPK' (default).
         * 'Gurobi' - not tested.
 
-    * "base_ring" - Base ring where polyhedral computations are performed.
-        Valid options are:
-        * QQ - (default) rational field
-        * RDF - real double field
-
     OUTPUTS:
 
     * "flowpipe"
@@ -87,24 +69,19 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
 
     if X0 is None:
         raise ValueError('Initial state X0 is missing.')
-    elif 'sage.geometry.polyhedron' not in str(type(X0)) and type(X0) == list:
-        # If X0 is not some type of polyhedron, set an initial point
-        X0 = Polyhedron(vertices = [X0], base_ring = base_ring)
-    elif 'sage.geometry.polyhedron' not in str(type(X0)) and X0.is_vector():
-        X0 = Polyhedron(vertices = [X0], base_ring = base_ring)
-    elif 'sage.geometry.polyhedron' in str(type(X0)):
-        # ensure that all input sets are on the same ring
-        # not sure about this
-        if 1==0:
-            if X0.base_ring() != base_ring:
-                [F, g] = PolyhedronToHSpaceRep(X0)
-                X0 = PolyhedronFromHSpaceRep(F, g, base_ring=base_ring)
-    else:
-        raise ValueError('Initial state X0 not understood')
+    elif 'sage.geometry.polyhedron' not in str(type(X0)):
+        # If X0 is not some type of polyhedron, try to set an initial point
+        if type(X0) == list:
+            X0 = Polyhedron(vertices = [X0], base_ring = base_ring)
+        elif X0.is_vector():
+            X0 = Polyhedron(vertices = [X0], base_ring = base_ring)
+        else:
+            raise ValueError('Initial state X0 not understood.')
 
     if B is None:
         # the system is homogeneous: dx/dt = Ax
         got_homogeneous = True
+        raise NotImplementedError('Homogeneous system not implemented.')
     else:
         got_homogeneous = False
         if U is None:
@@ -124,82 +101,52 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
     global solver
     solver = kwargs['solver'] if 'solver' in kwargs else 'GLPK'
 
-    global verbose
-    verbose = kwargs['verbose'] if 'verbose' in kwargs else 0
+    if got_homogeneous:
+        print 'got_homogeneous'
+        compute_flowpipe_homogeneous(A, X0, base_ring, tau, t0, T, N, directions, solver)
+        return
 
     # #######################################################
     # Compute first element of the approximating sequence   #
     # #######################################################
 
-    global Phi_tau, Omega0, W_tau
+    # compute range of the input under B, V = BU
+    V = polyhedron_linear_map(B, U, base_ring = base_ring)
 
-    if got_homogeneous: # dx/dx = Ax
+    # compute matrix exponential exp(A*tau)
+    global Phi_tau
+    Phi_tau = expm(np.multiply(A, tau))
 
-        # compute range of the input under B, V = BU
-        #V = polyhedron_linear_map(B, U, base_ring = base_ring)
+    # compute exp(tau*A)X0
+    expX0 = polyhedron_linear_map(Phi_tau, X0, base_ring = base_ring)
 
-        # compute matrix exponential exp(A*tau)
-        Phi_tau = expm(np.multiply(A, tau))
+    # compute the initial over-approximation
+    tau_V = polyhedron_linear_map(tau*np.identity(n), V)
 
-        # compute exp(tau*A)X0
-        expX0 = polyhedron_linear_map(Phi_tau, X0, base_ring = base_ring)
+    # compute the bloating factor
+    Ainfty = matrix_sup_norm(A)
+    RX0 = polyhedron_sup_norm(X0)
+    RV = polyhedron_sup_norm(V)
 
-        # compute the initial over-approximation
-        #tau_V = polyhedron_linear_map(tau*np.identity(n), V)
+    unitBall = BoxInfty(center = zero_vector(n), radius = 1, base_ring = base_ring)
+    alpha_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RX0 + RV/Ainfty)
+    alpha_tau_B = polyhedron_linear_map(alpha_tau*np.identity(n), unitBall)
 
-        # compute the bloating factor
-        Ainfty = matrix_sup_norm(A)
-        RX0 = polyhedron_sup_norm(X0)
-        #RV = polyhedron_sup_norm(V)
+    # compute the first element of the approximating sequence, Omega_0
+    aux = expX0.Minkowski_sum(tau_V)
+    global Omega0
+    Omega0 = X0.convex_hull(aux.Minkowski_sum(alpha_tau_B))
 
-        unitBall = BoxInfty(center = zero_vector(n), radius = 1, base_ring = base_ring)
-        alpha_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RX0)
-        alpha_tau_B = polyhedron_linear_map(alpha_tau*np.identity(n), unitBall, base_ring = base_ring)
+    # ################################################
+    # Build the sequence of approximations Omega_i   #
+    # ################################################
 
-        # compute the first element of the approximating sequence, Omega_0
-        #aux = expX0.Minkowski_sum(tau_V)
-        Omega0 = X0.convex_hull(alpha_tau_B)
+    beta_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RV/Ainfty)
+    beta_tau_B = polyhedron_linear_map(beta_tau*np.identity(n), unitBall)
+    global W_tau
+    W_tau = tau_V.Minkowski_sum(beta_tau_B)
 
-        #beta_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RV/Ainfty)
-        #beta_tau_B = polyhedron_linear_map(beta_tau*np.identity(n), unitBall)
-        W_tau = Polyhedron(vertices = [], ambient_dim=n) # NOT TESTED
-        # if W_tau = [], then supp_fun_polyhedron is set to return 0
-        #W_tau = tau_V.Minkowski_sum(beta_tau_B)
-
-    else: # dx/dx = Ax + Bu
-
-        # compute range of the input under B, V = BU
-        V = polyhedron_linear_map(B, U, base_ring = base_ring)
-
-        # compute matrix exponential exp(A*tau)
-        Phi_tau = expm(np.multiply(A, tau))
-
-        # compute exp(tau*A)X0
-        expX0 = polyhedron_linear_map(Phi_tau, X0, base_ring = base_ring)
-
-        # compute the initial over-approximation
-        tau_V = polyhedron_linear_map(tau*np.identity(n), V, base_ring = base_ring)
-
-        # compute the bloating factor
-        Ainfty = matrix_sup_norm(A)
-        RX0 = polyhedron_sup_norm(X0)
-        RV = polyhedron_sup_norm(V)
-
-        unitBall = BoxInfty(center = zero_vector(n), radius = 1, base_ring = base_ring)
-        alpha_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RX0 + RV/Ainfty)
-        alpha_tau_B = polyhedron_linear_map(alpha_tau*np.identity(n), unitBall, base_ring = base_ring)
-
-        # compute the first element of the approximating sequence, Omega_0
-        aux = expX0.Minkowski_sum(tau_V)
-        Omega0 = X0.convex_hull(aux.Minkowski_sum(alpha_tau_B))
-
-        beta_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RV/Ainfty)
-        beta_tau_B = polyhedron_linear_map(beta_tau*np.identity(n), unitBall, base_ring = base_ring)
-        W_tau = tau_V.Minkowski_sum(beta_tau_B)
-
-    # #######################################################
-    # Generate directions                                   #
-    # #######################################################
+    # define the directions
     if directions['select'] == 'box':
 
         if n==2:
@@ -238,7 +185,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         raise TypeError('Directions dictionary not understood.')
 
 
-    # transform directions to numpy array, and get number of directions
+    # directions as numpy array, and number of directions
     dArray = np.array(dList)
     k = len(dArray)
 
@@ -249,7 +196,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         Omega_i_Family_SF.append( _Omega_i_supports(d) )
 
     # ################################################
-    # Build the sequence of approximations Omega_i   #
+    # Compute flowpipe                               #
     # ################################################
 
     # each polyhedron is built using the support functions over-approximation
@@ -284,17 +231,12 @@ def _Omega_i_supports(d):
 
     r.append(d)
     s.append(0)
-    rhoi.append(supp_fun_polyhedron(Omega0, d, solver=solver, verbose=verbose))
+    rhoi.append(supp_fun_polyhedron(Omega0, d,solver=solver))
 
     for i in [0..N-2]:
         r.append(np.dot(Phi_tau.transpose(),r[i]))
-        #print r[i]
-        #print W_tau.base_ring()
-        #print W_tau.inequalities_list()
-        #print supp_fun_polyhedron(W_tau, r[i], solver=solver, verbose=verbose)
-        #print '===================='
-        s.append(s[i] + supp_fun_polyhedron(W_tau, r[i], solver=solver, verbose=verbose))
-        rhoi.append(s[i+1] + supp_fun_polyhedron(Omega0, r[i+1], solver=solver, verbose=verbose))
+        s.append(s[i] + supp_fun_polyhedron(W_tau, r[i],solver=solver))
+        rhoi.append(s[i+1] + supp_fun_polyhedron(Omega0, r[i+1],solver=solver))
 
     return rhoi
 
