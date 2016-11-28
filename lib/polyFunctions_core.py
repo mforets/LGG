@@ -247,7 +247,7 @@ def PolyhedronToHSpaceRep(P, separate_equality_constraints = False):
                 A.append(-pi_vec[_sage_const_1 :len(pi_vec)])
                 b.append(pi_vec[_sage_const_0 ])
 
-    return [matrix(RDF, A), vector(RDF, b), matrix(RDF, Aeq), matrix(RDF, beq)]
+    return [matrix(RDF, A), vector(RDF, b), matrix(RDF, Aeq), vector(RDF, beq)]
 
 
 def BoxInfty(lengths=None, center=None, radius=None, base_ring=QQ, return_HSpaceRep=False):
@@ -433,7 +433,7 @@ def random_polygon_2d(num_vertices, **kwargs):
     base_ring = kwargs['base_ring'] if 'base_ring' in kwargs else QQ
 
     scale = kwargs['scale'] if 'scale' in kwargs else _sage_const_1 
-    
+
     angles = [random.uniform(_sage_const_0 , _sage_const_2 *pi.n(digits=_sage_const_5 )) for i in range(num_vertices)]
     vert = [[scale*exp(I*angles[i]).real(), scale*exp(I*angles[i]).imag()] for i in range(num_vertices)]
 

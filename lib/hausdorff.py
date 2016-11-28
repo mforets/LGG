@@ -31,7 +31,15 @@ _sage_const_2 = Integer(2); _sage_const_1 = Integer(1); _sage_const_1en1 = RealN
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-from polyFunctions_core import *
+# compatibility with older version (in SMC)
+try:
+    from polyFunctions_core_future import *
+except ImportError:
+    try:
+        from polyFunctions_core import *
+    except ImportError:
+        raise ImportError('Could not import module polyFunctions_core.')
+
 from norms import *
 
 class NotImplementedException(Exception):
@@ -41,40 +49,57 @@ class NotImplementedException(Exception):
         return self.msg
 
 
-def polyAsphericity(P, tol=_sage_const_1en1 , MaxIter = _sage_const_1e2 , verbose=_sage_const_0 ):
+def asphericity_polytope(P, tol=_sage_const_1en1 , MaxIter=_sage_const_1e2 , verbose=_sage_const_0 , solver='GLPK'):
+    r""" Algorithm for computing asphericity
+
+    INPUT:
+
+    "x0" - point in the interior of P
+
+    "tol" - stop condition
+
+    OUTPUT:
+
+    "psi_opt" -  min_{x in P} psi(x) = R(x)/r(x), where R(x) and r(x) are the circumradius
+                and the inradius at x respectively.
+
+    "alphakList" - sequence of psi(x) which converges to psi_opt
+
+    "xkList" - sequence of interior points which converge to the minimum
+
+    """
 
     # check low-dimensionality
-    if not P.is_full_dimensional(): raise NotImplementedException('The polytope is not full-dimensional')
+    if not P.is_full_dimensional():
+        raise NotImplementedException('The polytope is not full-dimensional')
 
     # initial data
     p = P.ambient_dim()
 
-    [DP, d] = polytopeToHrep(P) # in the form Dy <= d
+    [DP, d] = PolyhedronToHSpaceRep(P) # in the form Dy <= d
     D = -DP    # transform to <Dj,y> + dj >= 0
     l = D.nrows()
-    mP = oppositePolytope(P)
+    mP = opposite_polyhedron(P)
 
     # unit ball, infinity norm
-    Bn = Binfty(zero_vector(RR,p), _sage_const_1 )
-    [C, c] = polytopeToHrep(Bn)
+    Bn = BoxInfty(center=zero_vector(RDF,p), radius=_sage_const_1 )
+    [C, c] = PolyhedronToHSpaceRep(Bn)
     C = -C    # transform to <Cj,y> + cj >= 0
     m = len(c)
 
     # auxiliary matrices A, a, B, b
-    A = matrix(RR, C.nrows(), C.ncols())
+    A = matrix(RDF, C.nrows(), C.ncols())
     a = []
     for i in range(m):
         A.set_row(i, -C.row(i)/c[i])
-        a.append(supp_fun_polyhedron(A.row(i), mP, showOutput=_sage_const_0 )[_sage_const_0 ])
+        a.append(supp_fun_polyhedron(mP, A.row(i),solver=solver))
 
-    B = matrix(RR, D.nrows(), D.ncols())
+    B = matrix(RDF, D.nrows(), D.ncols())
     b = []
     for j in range(l):
-        [nDj, ymax] = supp_fun_polyhedron(D.row(j), Bn, showOutput=_sage_const_0 )
+        [nDj, ymax] = supp_fun_polyhedron(Bn, D.row(j), return_xopt=True,solver=solver)
         B.set_row(j, D.row(j)/nDj)
         b.append(d[j]/nDj)
-
-    #[psi_k, alphakList, xkList] = asphericityPolytope(x0)
 
     # generate an initial point
     x0 = chebyshev_center(DP, d)
@@ -92,7 +117,7 @@ def polyAsphericity(P, tol=_sage_const_1en1 , MaxIter = _sage_const_1e2 , verbos
     convergeFlag = _sage_const_0 
     iterCount = _sage_const_0 
     while (iterCount < MaxIter) and (not convergeFlag):
-        [psi_k, xkDict, zkDict] = asphericity_iteration(xk0, l, m, p, A, a, B, b, verbose)
+        [psi_k, xkDict, zkDict] = _asphericity_iteration(xk0, l, m, p, A, a, B, b, verbose=verbose,solver=solver)
         xk = vector(xkDict); xkList.append(xk)
         zk = vector(zkDict); alphakList.append(zk[_sage_const_0 ])
         xk0 = xk;
@@ -109,7 +134,7 @@ def polyAsphericity(P, tol=_sage_const_1en1 , MaxIter = _sage_const_1e2 , verbos
     return [asph, x_asph]
 
 
-def asphericity_iteration(xk, l, m, p, A, a, B, b, verbose = _sage_const_0 ):
+def _asphericity_iteration(xk, l, m, p, A, a, B, b, verbose=_sage_const_0 , solver='GLPK'):
     # what is the best way to share this data?
 
     #alphak = asphericity(xk)
@@ -117,7 +142,7 @@ def asphericity_iteration(xk, l, m, p, A, a, B, b, verbose = _sage_const_0 ):
     r_xk = min(B.row(j)*vector(xk)+b[j] for j in range(l))
     alphak = R_xk/r_xk
 
-    a_LP = MixedIntegerLinearProgram(maximization=False, solver = "GLPK")
+    a_LP = MixedIntegerLinearProgram(maximization=False, solver=solver)
     x = a_LP.new_variable(integer=False, nonnegative=False)
     z = a_LP.new_variable(integer=False, nonnegative=False)
 
@@ -549,5 +574,5 @@ def H_distance_vertices_brute_force(X, Y, norm=_sage_const_2 ):
             dYX = aux_int
     dYX = aux_ext
 
-    return max(dXY, dYX)    
+    return max(dXY, dYX)
 
