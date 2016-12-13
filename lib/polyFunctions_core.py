@@ -36,9 +36,9 @@ def PolyhedronFromHSpaceRep(A, b, base_ring=QQ):
 
     INPUT:
 
-    * "A" - generic (Sage) dense matrix of size m x n, in RDF or QQ ring
+    * "A" - matrix of size m x n, in RDF or QQ ring. Accepts generic Sage matrix, and also a Numpy arrays with a matrix shape.
 
-    * "b" - generic (Sage) dense vector of size m, in RDF or QQ ring
+    * "b" - vector of size m, in RDF or QQ ring. Accepts generic Sage matrix, and also a Numpy array.
 
     * "base_ring" - (default: QQ). Specifies the ring (base_ring) for the Polyhedron constructor. Valid choices are:
 
@@ -49,6 +49,11 @@ def PolyhedronFromHSpaceRep(A, b, base_ring=QQ):
     OUTPUT:
 
     * "P" - a Polyhedron object
+
+    TO-DO:
+
+    * accept numpy arrays. notice that we often handle numpy arrays (for instance if we load some data from matlab using the function
+    scipy.io.loadmat(...), then the data will be loaded as a dictionary of numpy arrays)
 
     EXAMPLES:
 
@@ -76,10 +81,32 @@ def PolyhedronFromHSpaceRep(A, b, base_ring=QQ):
     This function is useful especially when the input matrices A, b are ill-defined (constraints that differ by tiny amounts making the input data to be degenerate or almost degenerate), causing problems to Polyhedron(...). In this case it is recommended to use base_ring = QQ. Each element of A and b will be converted to rational, and this will be sent to Polyhedron. Note that Polyhedron automatically removes redundant constraints.
 
     """
-    ieqs_list = list();
-    ambient_dim = A.ncols()
 
     if (base_ring == RDF):
+
+        if 'numpy.ndarray' in str(type(A)):
+            # assuming that b is also a numpy array
+            m = A.shape[_sage_const_0 ]; n = A.shape[_sage_const_1 ];
+
+            b_RDF = vector(RDF, m, [RDF(bi) for bi in b])
+
+            A_RDF = matrix(RDF, m, n)
+            for i in range(m):
+                A_RDF.set_row(i, [RDF(A[i][j]) for j in range(n)])
+
+            A = copy(A_RDF);
+            b = copy(b_RDF);
+
+        ambient_dim = A.ncols()
+
+        # transform to real, if needed
+        if A.base_ring() != RDF:
+            A.change_ring(RDF)
+
+        if b.base_ring() != RDF:
+            b.change_ring(RDF)
+
+        ieqs_list = []
         for i in range(A.nrows()):
             ieqs_list.append(list(-A.row(i)))  #change in sign, necessary since Polyhedron receives Ax+b>=0
             ieqs_list[i].insert(_sage_const_0 ,b[i])
@@ -87,18 +114,42 @@ def PolyhedronFromHSpaceRep(A, b, base_ring=QQ):
         P = Polyhedron(ieqs = ieqs_list, base_ring=RDF, ambient_dim=A.ncols(), backend='cdd')
 
     elif (base_ring == QQ):
+
+        if 'numpy.ndarray' in str(type(A)):
+            # assuming that b is also a numpy array
+            m = A.shape[_sage_const_0 ]; n = A.shape[_sage_const_1 ];
+
+            b_QQ = vector(QQ, m, [QQ(b[i]) for i in range(m)])
+            A_QQ = matrix(QQ, m, n)
+
+            for i in range(m):
+                A_QQ.set_row(i, [QQ(A[i][j]) for j in range(n)])
+
+            A = copy(A_QQ);
+            b = copy(b_QQ);
+
+        ambient_dim = A.ncols()
+
+        # transform to rational, if needed
+        if A.base_ring() != QQ:
+            #for i in range(A.nrows()):
+            #    A.set_row(i,[QQ(A.row(i)[j]) for j in range(ambient_dim)]);
+            A.change_ring(QQ)
+
+        if b.base_ring() != QQ:
+            #b = vector(QQ, [QQ(bi) for bi in b]);
+            b.change_ring(QQ)
+
+        ieqs_list = []
         for i in range(A.nrows()):
-
-            # transform to rational
-            A.set_row(i,[QQ(A.row(i)[j]) for j in range(ambient_dim)]);
-
             ieqs_list.append(list(-A.row(i)))  #change in sign, necessary since Polyhedron receives Ax+b>=0
-            ieqs_list[i].insert(_sage_const_0 ,QQ(b[i]))
+            ieqs_list[i].insert(_sage_const_0 ,b[i])
 
         P = Polyhedron(ieqs = ieqs_list, base_ring=QQ, ambient_dim=A.ncols(), backend = 'ppl')
 
     else:
         raise ValueError('Base ring not supported. Try with RDF or QQ.')
+
     return P
 
 def PolyhedronToHSpaceRep(P, separate_equality_constraints = False):
