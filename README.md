@@ -46,7 +46,7 @@ X0 = BoxInfty(center = [1,0], radius = 0.1)
 # set time discretization 
 tau = 1e-2
 ```
-Let's perform the reachability computation and plot the result (see Fig. above):
+Let's perform the reachability computation and plot it (the result is the figure above):
 
 ```python
 # compute reachability flowpipe
