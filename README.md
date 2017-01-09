@@ -1,3 +1,5 @@
+**Notice: This project is under construction.**
+
 # What is reachability?  
 
 Reachability analysis consists, roughly speaking, in determining future (or past) trajectories of dynamical systems. We will work on the continuous-time setting, and with dynamical systems that are mathematically described by a set of ordinary differential equations. The reachability problem gets more interesting when we consider uncertainties, i.e. *when the systems are not deterministic*. This usually involves making one or more of these working assumptions:
@@ -60,3 +62,5 @@ In the folder ```/tutorial```, you will find a set of Jupyter notebooks with a t
 ## How to read the *Tutorial*?
 
 The tutorial was designed in the collaborative mathematics platform SageMathCloud (SMC). It can also be run locally with SageMath + Jupyter notebook. Any of the notebooks (files with extension .ipynb) can be read with the [nbviewer](https://nbviewer.jupyter.org/), and searching for [this project](https://nbviewer.jupyter.org/github/mforets/LGG-Reachability-algorithm/tree/master/). 
+
+
