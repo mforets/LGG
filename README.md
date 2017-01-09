@@ -1,6 +1,8 @@
-**Notice: This project is under construction.**
+![simple 2d Example](examples/simple2d.png)
 
-# What is reachability?  
+**WARNING: This project is under construction!**
+
+## What is reachability?  
 
 Reachability analysis consists, roughly speaking, in determining future (or past) trajectories of dynamical systems. We will work on the continuous-time setting, and with dynamical systems that are mathematically described by a set of ordinary differential equations. The reachability problem gets more interesting when we consider uncertainties, i.e. *when the systems are not deterministic*. This usually involves making one or more of these working assumptions:
 
@@ -14,8 +16,48 @@ These assumptions lead to consider reachability flowpipes, which encompass an in
 
 The whole problem then translates to building reachability flowpipes with a reasonable balance between **complexity** (practically, the computational time under limited resources), and **accuracy** (practically, how good is the method for giving interesting answers).
 
+## An example
 
-## What is LGG?
+Consider the linear system $\dot{x} = Ax + u$, for $A = \begin{pmatrix} -1 & -4 \\ 4 & -1 \end{pmatrix}$ and the input is in a ball of radius $\mu=0.1$ centered at the origin, $u \in \mathcal{B}_\infty(0, 0.1)$. Suppose we want to compute the reachable set for all initial conditions $x_0 \in \mathcal{X}_0 = \mathcal{B}_\infty(c, 0.1)$, for $c = (1,0)^T$. This is modelled as follows:
+
+```python
+# import main program
+from src.lgg import compute_flowpipe, plot_flowpipe
+
+# libraries for polyhedral manipulations
+from lib.polyFunctions_core import BoxInfty
+
+# system's coefficient matrix
+A = matrix([[-1, -4], [4, -1]])
+
+# input coefficient matrix
+B = identity_matrix(2)
+
+# input domain U
+mu = 0.1
+U = BoxInfty(center = [0,0], radius = mu)
+
+# time horizon 
+T = 1
+
+# set initial condition 
+X0 = BoxInfty(center = [1,0], radius = 0.1)
+
+# set time discretization 
+tau = 1e-2
+```
+Let's perform the reachability computation and plot the result (see Fig. above):
+
+```python
+# compute reachability flowpipe
+fp = compute_flowpipe(A, X0, B, U, time_horizon = T, time_step = tau)
+
+# plot the result
+plot_flowpipe(fp)
+```
+
+
+## Why LGG?
 
 LGG stands for the name of the authors, Colas Le Guernic and Antoine Girard, see [LGG09LIN](http://www.sciencedirect.com/science/article/pii/S1751570X09000387), [LGG09HY](http://link.springer.com/chapter/10.1007/978-3-642-02658-4_40), and references therein. The algorithm is based on support functions, and its scope is uncertain hybrid systems with piecewise linear dynamics. A convenient computational representation of reachability flowpipes is given by [convex polytopes](https://en.wikipedia.org/wiki/Convex_polytope), and for this reason these geometric objects play a central role in the problem considered.  
 
