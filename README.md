@@ -18,7 +18,7 @@ The whole problem then translates to building reachability flowpipes with a reas
 
 ## An example
 
-Consider the linear system ![linearSys](http://mathurl.com/jpvk28u.png), for $A = \begin{pmatrix} -1 & -4 \\ 4 & -1 \end{pmatrix}$ and the input is in a ball of radius $\mu=0.1$ centered at the origin, $u \in \mathcal{B}_\infty(0, 0.1)$. Suppose we want to compute the reachable set for all initial conditions $x_0 \in \mathcal{X}_0 = \mathcal{B}_\infty(c, 0.1)$, for $c = (1,0)^T$. This is modelled as follows:
+Consider the linear system ![linearSys](http://mathurl.com/jpvk28u.png), for ![A](http://mathurl.com/hflhc4h.png) and the input is in a ball of radius ![mu](http://mathurl.com/jz3kjpv.png) centered at the origin, ![u](http://mathurl.com/jd7n5me.png). Suppose we want to compute the reachable set for all initial conditions ![x0](http://mathurl.com/j2wgh6b.png), for ![c](http://mathurl.com/j27ohzg.png). This is modelled as follows:
 
 ```python
 # import main program
