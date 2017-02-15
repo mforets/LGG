@@ -1,22 +1,31 @@
 r"""
-Extension to polyhedra library for the purpose of mathematical modeling, with a focus on computational geometry.
 
-matrixNorms has methods to compute:
+norms has methods to compute:
 
 * matrix norm, induced by vector p-norms, for the simplest cases p = 1, 2, infty.
 
-* the vector p norm for 1 <=p < infty with vecpnorm(b,p) and vecinftynorm(b) for p = infty
+* the vector p norm for 1 <= p < infty with vecpnorm(b,p) and vecinftynorm(b) for p = infty
 
-AUTHORS:
+* the logarithmic norm of a matrix
+
+AUTHORS :
 
 - Marcelo Forets (2016-10)
 
-TO-DO:
+NOTES :
 
-do we need this lib. Merge with the existent .norm function for Sage matrices and vectors.
-which is the algo that is used in the general case?
-The general case for a matrix norm. See:
+- Sage already has norm method that can be applied to vectors and to matrix.
+It is recommended to use that methods when possible. Allowable values are
+'frob' (for the Frobenius norm), integers -2, -1, 1, 2 (default),  positive
+and negative infinity. See docstring for further information. Computation is
+performed  using the norm() function of SciPy/NumPy library.
+
+- Resources for the the general case (p) for a matrix norm:
 http://mathoverflow.net/questions/39148/efficiently-computing-a-matrixs-induced-p-norm
+
+TO-DO :
+
+- matrix p norm for arbitrary p.
 
 """
 

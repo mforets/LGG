@@ -1,21 +1,23 @@
 r"""
 Compute an approximate two-dimensional projection of a convex polytope.
 
-Implements Lotov algorithm [1]. Receives the direction vectors and a tolerance (absolute or relative error) that corresponds to the error of the approximation in the Hausdorff distance.
+Implements Lotov algorithm [1]. Receives the direction vectors and a tolerance (absolute or relative error) that
+corresponds to the error of the approximation in the Hausdorff distance.
 
-AUTHORS:
+AUTHORS :
 
-- Frederic Viry (main author)
+- Frederic Viry (author)
 
-- Marcelo Forets (reviewer)
+- Marcelo Forets (review)
 
-EXAMPLES::
+EXAMPLES:
 
 sage: lotov_algo(Matrix([[1, 0], [0, 1], [-1, 0], [0, -1]]), vector([1, 1, 1, 1]), vector([1, 0]), vector([0, 1]), 0.1)
 
-REFERENCES::
+REFERENCES :
 
-[1] Lotov, A. V., & Pospelov, A. I. (2008). The modified method of refined bounds for polyhedral approximation of convex polytopes. Computational Mathematics and Mathematical Physics, 48(6), 933-941.
+[1] Lotov, A. V., & Pospelov, A. I. (2008). The modified method of refined bounds for polyhedral approximation of convex polytopes.
+Computational Mathematics and Mathematical Physics, 48(6), 933-941.
 
 """
 
