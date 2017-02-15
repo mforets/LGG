@@ -1,7 +1,5 @@
 ![simple 2d Example](examples/simple2d.png)
 
-**WARNING: This project is under construction!**
-
 ## What is reachability?  
 
 Reachability analysis consists, roughly speaking, in determining future (or past) trajectories of dynamical systems. We will work on the continuous-time setting, and with dynamical systems that are mathematically described by a set of ordinary differential equations. The reachability problem gets more interesting when we consider uncertainties, i.e. *when the systems are not deterministic*. This usually involves making one or more of these working assumptions:
