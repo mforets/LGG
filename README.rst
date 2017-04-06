@@ -1,5 +1,5 @@
 ======================================================
-LGG (Le Guernic-Girard) Reachability Algorithm in Sage
+Le Guernic-Girard Reachability Algorithm in Sage
 ======================================================
 
 .. image:: https://api.travis-ci.org/mforets/LGG.svg
