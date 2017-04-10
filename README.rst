@@ -10,7 +10,7 @@ Installation
 
 To install the package use the following command::
 
-   sage -pip install --upgrade -v git+https://github.com/mforets/LGG.git
+   sage -pip install --upgrade -v git+https://github.com/mforets/polyhedron_tools.git git+https://github.com/mforets/LGG.git
 
 Documentation
 ~~~~~~~~~~~~~
