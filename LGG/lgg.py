@@ -1,33 +1,52 @@
 r"""
+Le Guernic-Girard Reachability Algorithm in Sage.
 
-TO-DO:
+AUTHOR:
 
-* Cythonize : What can be done with a user-defined class; Polyhedron abstract class.
-
-* Use an internal supp_fun_polyhedron, because W_tau and Omega_0 do not change, so we may avoid some overhead
-due to function calls and preparation of the LP. In some experiments, Gurobi is slower! For instance, I got 8s in GLPK
-against 14s in Gurobi. What's the reason? Overhead in function calls?
-
-* Understand why in some configurations it does not work. For instance, if X0 is QQ and base_ring is set to QQ. However,
-if X0 is RDF and base_ring is set to QQ is does work (only with GLPK). Also, it would be intersting to make it work with Gurobi.
-Currently, if X0 is RDF and base_ring is set to QQ, then Gurobi will give infeas or unbdd problem.
-
-* The plot for projections of higher dimensional systems is not very nice; it does not allow alpha keyword,
-and the polygons are not taken the Minkowski sum. Is it possible to use the library projections?
-
-* Change "solver" to "LP_solver"
-
+- Marcelo Forets (Dec 2016 at VERIMAG - France)
 """
+#************************************************************************
+#       Copyright (C) 2016 Marcelo Forets <mforets@nonlinearnotes.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# any later version.
+#                  http://www.gnu.org/licenses/
+#************************************************************************
 
-# source polyFunctions library is located in the parent directory
-import sys; sys.path.append('..')
+#===============================================
+# Dependencies
+#===============================================
 
-from lib.polyFunctions_core import *
-from lib.norms import matrix_sup_norm
-
+# Working numerical libraries
 import numpy as np
+import scipy
+from scipy import inf
+from scipy.io import savemat
+import scipy.sparse as sp
+from scipy.sparse import kron, eye
+import scipy.sparse.linalg
 from scipy.linalg import expm, sinm, cosm
 import random
+
+# Carleman input/output libraries
+from carlin.io import get_Fj_from_model
+
+# Toolbox for operations on polytopes
+from polyhedron_tools.misc import polyhedron_to_Hrep, chebyshev_center, radius
+
+# Sage objects: Rings, Polynomials, Linear algebra
+from sage.rings.all import RR, QQ
+from sage.rings.real_double import RDF
+from sage.rings.polynomial.polynomial_ring import polygens
+
+from sage.modules.free_module_element import vector
+
+from sage.functions.other import real_part, imag_part
+from sage.functions.log import log, exp
+
+#from lib.norms import matrix_sup_norm
 
 class NotImplementedException(Exception):
     def __init__(self, msg):
