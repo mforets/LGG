@@ -34,14 +34,14 @@ import random
 from carlin.io import get_Fj_from_model
 
 # Toolbox for operations on polytopes
-from polyhedron_tools.misc import polyhedron_to_Hrep, chebyshev_center, radius
+from polyhedron_tools.misc import polyhedron_to_Hrep, polyhedron_from_Hrep, chebyshev_center, radius, support_function
 
 # Sage objects: Rings, Polynomials, Linear algebra
 from sage.rings.all import RR, QQ
 from sage.rings.real_double import RDF
 from sage.rings.polynomial.polynomial_ring import polygens
-
-from sage.modules.free_module_element import vector
+#from sage.modules.free_module_element import vector
+from sage.matrix.constructor import matrix, vector
 
 from sage.functions.other import real_part, imag_part
 from sage.functions.log import log, exp
@@ -117,8 +117,8 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         # not sure about this
         if 1==0:
             if X0.base_ring() != base_ring:
-                [F, g] = PolyhedronToHSpaceRep(X0)
-                X0 = PolyhedronFromHSpaceRep(F, g, base_ring=base_ring)
+                [F, g] = polyhedron_to_Hrep(X0)
+                X0 = polyhedron_from_Hrep(F, g, base_ring=base_ring)
     else:
         raise ValueError('Initial state X0 not understood')
 
@@ -306,7 +306,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
             A.set_row(j, dList[j])
             b[j] = s_fun
 
-        Omega_i_Poly.append( PolyhedronFromHSpaceRep(A, b, base_ring = base_ring) )
+        Omega_i_Poly.append( polyhedron_from_Hrep(A, b, base_ring = base_ring) )
 
     return Omega_i_Poly
 
@@ -323,9 +323,9 @@ def _Omega_i_supports_hom(d, X0):
     s.append(0)
 
     # append to rhoi the support function of Omega0 at d
-    rho_X0_d = supp_fun_polyhedron(X0, d, solver=solver, verbose=verbose)
-    rho_expX0_d = supp_fun_polyhedron(expX0, d, solver=solver, verbose=verbose)
-    rho_alpha_tau_B_d = supp_fun_polyhedron(alpha_tau_B, d, solver=solver, verbose=verbose)
+    rho_X0_d = support_function(X0, d, solver=solver, verbose=verbose)
+    rho_expX0_d = support_function(expX0, d, solver=solver, verbose=verbose)
+    rho_alpha_tau_B_d = support_function(alpha_tau_B, d, solver=solver, verbose=verbose)
     rhoi.append(max(rho_X0_d, rho_expX0_d + rho_alpha_tau_B_d))
 
     for i in [0..N-2]:
@@ -334,12 +334,12 @@ def _Omega_i_supports_hom(d, X0):
         s.append(s[i])
 
         # append to rhoi the support function of Omega0 at r[i+1]
-        rho_X0_rip1 = supp_fun_polyhedron(X0, r[i+1], solver=solver, verbose=verbose)
-        rho_expX0_rip1 = supp_fun_polyhedron(expX0, r[i+1], solver=solver, verbose=verbose)
-        rho_alpha_tau_B_rip1 = supp_fun_polyhedron(alpha_tau_B, r[i+1], solver=solver, verbose=verbose)
+        rho_X0_rip1 = support_function(X0, r[i+1], solver=solver, verbose=verbose)
+        rho_expX0_rip1 = support_function(expX0, r[i+1], solver=solver, verbose=verbose)
+        rho_alpha_tau_B_rip1 = support_function(alpha_tau_B, r[i+1], solver=solver, verbose=verbose)
         rhoi.append(s[i+1] + max(rho_X0_rip1, rho_expX0_rip1 + rho_alpha_tau_B_rip1))
 
-        #rhoi.append(s[i+1] + supp_fun_polyhedron(Omega0, r[i+1], solver=solver, verbose=verbose))
+        #rhoi.append(s[i+1] + support_function(Omega0, r[i+1], solver=solver, verbose=verbose))
 
 
     return rhoi
@@ -357,9 +357,9 @@ def _Omega_i_supports_inhom(d, X0):
     s.append(0)
 
     # append to rhoi the support function of Omega0 at d
-    rho_X0_d = supp_fun_polyhedron(X0, d, solver=solver, verbose=verbose)
-    rho_expX0_d = supp_fun_polyhedron(expX0, d, solver=solver, verbose=verbose)
-    rho_alpha_tau_B_d = supp_fun_polyhedron(alpha_tau_B, d, solver=solver, verbose=verbose)
+    rho_X0_d = support_function(X0, d, solver=solver, verbose=verbose)
+    rho_expX0_d = support_function(expX0, d, solver=solver, verbose=verbose)
+    rho_alpha_tau_B_d = support_function(alpha_tau_B, d, solver=solver, verbose=verbose)
     rhoi.append(max(rho_X0_d, rho_expX0_d + rho_alpha_tau_B_d))
 
     for i in [0..N-2]:
@@ -368,17 +368,17 @@ def _Omega_i_supports_inhom(d, X0):
 
         #recall that:
         #W_tau = tau_V.Minkowski_sum(beta_tau_B)
-        rho_tau_V_ri = supp_fun_polyhedron(tau_V, r[i], solver=solver, verbose=verbose);
-        rho_beta_tau_B_ri = supp_fun_polyhedron(beta_tau_B, r[i], solver=solver, verbose=verbose);
+        rho_tau_V_ri = support_function(tau_V, r[i], solver=solver, verbose=verbose);
+        rho_beta_tau_B_ri = support_function(beta_tau_B, r[i], solver=solver, verbose=verbose);
         s.append(s[i] + rho_tau_V_ri + rho_beta_tau_B_ri)
 
         # append to rhoi the support function of Omega0 at r[i+1]
-        rho_X0_rip1 = supp_fun_polyhedron(X0, r[i+1], solver=solver, verbose=verbose)
-        rho_expX0_rip1 = supp_fun_polyhedron(expX0, r[i+1], solver=solver, verbose=verbose)
-        rho_alpha_tau_B_rip1 = supp_fun_polyhedron(alpha_tau_B, r[i+1], solver=solver, verbose=verbose)
+        rho_X0_rip1 = support_function(X0, r[i+1], solver=solver, verbose=verbose)
+        rho_expX0_rip1 = support_function(expX0, r[i+1], solver=solver, verbose=verbose)
+        rho_alpha_tau_B_rip1 = support_function(alpha_tau_B, r[i+1], solver=solver, verbose=verbose)
         rhoi.append(s[i+1] + max(rho_X0_rip1, rho_expX0_rip1 + rho_alpha_tau_B_rip1))
 
-        #rhoi.append(s[i+1] + supp_fun_polyhedron(Omega0, r[i+1], solver=solver, verbose=verbose))
+        #rhoi.append(s[i+1] + support_function(Omega0, r[i+1], solver=solver, verbose=verbose))
 
     return rhoi
 
