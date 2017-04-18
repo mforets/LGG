@@ -47,6 +47,12 @@ from sage.functions.other import real_part, imag_part, ceil, floor
 from sage.functions.log import log, exp
 from sage.symbolic.constants import pi
 
+from sage.functions.trig import cos, sin
+
+from sage.rings.infinity import Infinity    # oo
+
+
+
 #from lib.norms import matrix_sup_norm
 
 class NotImplementedException(Exception):
@@ -211,12 +217,12 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         expX0 = polyhedron_linear_map(Phi_tau, X0, base_ring = base_ring)
 
         # compute the bloating factor
-        Ainfty = matrix_sup_norm(A)
-        RX0 = polyhedron_sup_norm(X0)
+        Ainfty = A.norm(oo)
+        RX0 = radius(X0)
 
         unitBall = BoxInfty(center = zero_vector(n), radius = 1, base_ring = base_ring)
         alpha_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RX0)
-        alpha_tau_B = polyhedron_linear_map(alpha_tau*np.identity(n), unitBall, base_ring = base_ring)
+        alpha_tau_B = (alpha_tau*np.identity(n)) * unitBall
 
         # now we have that:
         # Omega0 = X0.convex_hull(expX0.Minkowski_sum(alpha_tau_B))
