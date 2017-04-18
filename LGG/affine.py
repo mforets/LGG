@@ -169,7 +169,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         if n != 2:
             raise NotImplementedError('Directions select octagon not implemented for n other than 2. Try box.')
 
-        theta = [i*pi/4 for i in [0..7]] # octagon
+        theta = [i*pi/4 for i in range(8)] # octagon
         dList = [vector(RR,[cos(t), sin(t)]) for t in theta]
 
     elif directions['select'] == 'random':
