@@ -45,6 +45,7 @@ from sage.matrix.constructor import matrix, vector
 
 from sage.functions.other import real_part, imag_part, ceil, floor
 from sage.functions.log import log, exp
+from sage.symbolic.constants import pi
 
 #from lib.norms import matrix_sup_norm
 
@@ -59,36 +60,36 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
 
     INPUTS:
 
-    * "A" - The coefficient matrix of the system.
+    * ``A`` -- coefficient matrix of the system
 
-    * "X0" - The initial state.
+    * ``X0`` -- initial set
 
-    * "B" -
+    * ``B`` -- transformation of the input
 
-    * "U" -
+    * ``U`` -- input set
 
-    * "time_step" - (default = 1e-2). Time step.
+    * ``time_step`` -- (default = 1e-2) time step
 
-    * "initial_time" - (default = 0). The initial time.
+    * ``initial_time`` -- (default = 0) the initial time
 
-    * "time_horizon" - (default = 1). The final time.
+    * ``time_horizon`` -- (default = 1) the final time
 
-    * "number_of_time_steps" - (default = ceil(T/tau)). Number of time steps.
+    * ``number_of_time_steps`` -- (default = ceil(T/tau)) number of time steps
 
-    * "directions" - (default: random, and a box). A dictionary.
+    * "directions" -- (default: random, and a box) dictionary
 
-    * "solver" - LP solver. Valid options are:
+    * ``solver`` -- LP solver. Valid options are:
         * 'GLPK' (default).
         * 'Gurobi'
 
-    * "base_ring" - Base ring where polyhedral computations are performed.
+    * ``base_ring`` -- base ring where polyhedral computations are performed
         Valid options are:
         * QQ - (default) rational field
         * RDF - real double field
 
     OUTPUTS:
 
-    * "flowpipe"
+    * ``flowpipe``
 
     """
 
