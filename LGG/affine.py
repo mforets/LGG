@@ -35,6 +35,7 @@ from carlin.io import get_Fj_from_model
 
 # Toolbox for operations on polytopes
 from polyhedron_tools.misc import polyhedron_to_Hrep, polyhedron_from_Hrep, chebyshev_center, radius, support_function
+from polyhedron_tools.misc import BoxInfty
 
 # Sage objects: Rings, Polynomials, Linear algebra
 from sage.rings.all import RR, QQ
@@ -50,8 +51,6 @@ from sage.symbolic.constants import pi
 from sage.functions.trig import cos, sin
 
 from sage.rings.infinity import Infinity    # oo
-
-
 
 #from lib.norms import matrix_sup_norm
 
