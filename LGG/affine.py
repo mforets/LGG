@@ -270,7 +270,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         tau_V = (tau*np.identity(n)) * V
 
         # compute the bloating factor
-        Ainfty = norm(A, o)
+        Ainfty = A.norm(Infinity)
         RX0 = radius(X0)
         RV = radius(V)
 
