@@ -214,7 +214,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         Phi_tau = expm(np.multiply(A, tau))
 
         # compute exp(tau*A)X0
-        expX0 = polyhedron_linear_map(Phi_tau, X0, base_ring = base_ring)
+        expX0 = Phi_tau * X0
 
         # compute the bloating factor
         Ainfty = A.norm(oo)
@@ -258,32 +258,32 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         global tau_V, beta_tau_B
 
         # compute range of the input under B, V = BU
-        V = polyhedron_linear_map(B, U, base_ring = base_ring)
+        V = B * U
 
         # compute matrix exponential exp(A*tau)
         Phi_tau = expm(np.multiply(A, tau))
 
         # compute exp(tau*A)X0
-        expX0 = polyhedron_linear_map(Phi_tau, X0, base_ring = base_ring)
+        expX0 = Phi_tau * X0
 
         # compute the initial over-approximation
-        tau_V = polyhedron_linear_map(tau*np.identity(n), V, base_ring = base_ring)
+        tau_V = (tau*np.identity(n)) * V
 
         # compute the bloating factor
         Ainfty = matrix_sup_norm(A)
-        RX0 = polyhedron_sup_norm(X0)
-        RV = polyhedron_sup_norm(V)
+        RX0 = radius(X0)
+        RV = radius(V)
 
         unitBall = BoxInfty(center = zero_vector(n), radius = 1, base_ring = base_ring)
         alpha_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RX0 + RV/Ainfty)
-        alpha_tau_B = polyhedron_linear_map(alpha_tau*np.identity(n), unitBall, base_ring = base_ring)
+        alpha_tau_B = (alpha_tau*np.identity(n)) * unitBall
 
         # compute the first element of the approximating sequence, Omega_0
         #aux = expX0.Minkowski_sum(tau_V)
         #Omega0 = X0.convex_hull(aux.Minkowski_sum(alpha_tau_B))
 
         beta_tau = (exp(tau*Ainfty) - 1 - tau*Ainfty)*(RV/Ainfty)
-        beta_tau_B = polyhedron_linear_map(beta_tau*np.identity(n), unitBall, base_ring = base_ring)
+        beta_tau_B = (beta_tau*np.identity(n)) * unitBall
 
         #W_tau = tau_V.Minkowski_sum(beta_tau_B)
 
