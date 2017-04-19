@@ -43,6 +43,7 @@ from sage.rings.real_double import RDF
 from sage.rings.polynomial.polynomial_ring import polygens
 #from sage.modules.free_module_element import vector
 from sage.matrix.constructor import matrix, vector
+from sage.modules.free_module_element import zero_vector
 
 from sage.functions.other import real_part, imag_part, ceil, floor
 from sage.functions.log import log, exp
