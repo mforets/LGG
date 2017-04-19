@@ -217,7 +217,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         expX0 = Phi_tau * X0
 
         # compute the bloating factor
-        Ainfty = A.norm(oo)
+        Ainfty = A.norm(Infinity)
         RX0 = radius(X0)
 
         unitBall = BoxInfty(center = zero_vector(n), radius = 1, base_ring = base_ring)
@@ -270,7 +270,7 @@ def compute_flowpipe(A=None, X0=None, B=None, U=None, **kwargs):
         tau_V = (tau*np.identity(n)) * V
 
         # compute the bloating factor
-        Ainfty = matrix_sup_norm(A)
+        Ainfty = norm(A, o)
         RX0 = radius(X0)
         RV = radius(V)
 
