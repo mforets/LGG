@@ -12,6 +12,8 @@ To install the package use the following command::
 
    sage -pip install --upgrade -v git+https://github.com/mforets/polyhedron_tools.git git+https://github.com/mforets/LGG.git
 
+**WARNING:** *This package is deprecated and is no longer maintained. You may be interested to check out our github org* `JuliaReach <https://github.com/juliareach>`_ and the package `Reachability.jl <https://github.com/juliareach/Reachability.jl>`_.
+
 Documentation
 ~~~~~~~~~~~~~
 
